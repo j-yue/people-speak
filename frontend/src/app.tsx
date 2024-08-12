@@ -1,26 +1,39 @@
-import { Button, Rows, Text } from "@canva/app-ui-kit";
-import { addNativeElement } from "@canva/design";
+import { useState, useEffect } from "react";
+import { Rows, Text } from "@canva/app-ui-kit";
 import styles from "styles/components.css";
+import { GenerateButton } from "./components/GenerateButton";
+import { PersonaList } from "./components/PersonaList";
+import { AddPersonaButton } from "./components/AddPersonaButton";
+import { useLocalStorage } from "./hooks/useLocalStorage";
+import { PersonaListContext } from "./context/PersonaListContext";
+import type { PersonaList as PersonaListType } from "./@types/types";
 
 export const App = () => {
-  const onClick = () => {
-    addNativeElement({
-      type: "TEXT",
-      children: ["Hello world!"],
-    });
-  };
+  const [list, setList] = useState<PersonaListType>([]);
+
+  useLocalStorage(setList);
+
+  useEffect(() => {
+    localStorage.setItem("personaList", JSON.stringify(list));
+  }, [list]);
 
   return (
-    <div className={styles.scrollContainer}>
-      <Rows spacing="2u">
-        <Text>
-          To make changes to this app, edit the <code>src/app.tsx</code> file,
-          then close and reopen the app in the editor to preview the changes.
-        </Text>
-        <Button variant="primary" onClick={onClick} stretch>
-          Do something cool
-        </Button>
-      </Rows>
-    </div>
+    <PersonaListContext.Provider value={{ list, setList }}>
+      <div className={styles.scrollContainer}>
+        <Rows spacing="2u">
+          <Text size="medium">
+            Use the power of AI to quickly rewrite copy so that it speaks to
+            your audiences.
+          </Text>
+          <AddPersonaButton />
+          <PersonaList />
+          <Text>
+            {list.filter((persona) => persona.isEnabled).length} personas
+            enabled
+          </Text>
+          <GenerateButton />
+        </Rows>
+      </div>
+    </PersonaListContext.Provider>
   );
 };
